@@ -10,8 +10,8 @@ print('Asteroid processing service')
 # Initiating and reading config values
 print('Loading configuration from file')
 
-# 
-nasa_api_key = "???"
+# Getting the Api key 
+nasa_api_key = "2IomHPgnWp7kcS7kyAQGPXLDnr4gthwAMg6CNB7i"
 nasa_api_url = "https://api.nasa.gov/neo/"
 
 # Getting todays date
@@ -19,7 +19,7 @@ dt = datetime.now()
 request_date = str(dt.year) + "-" + str(dt.month).zfill(2) + "-" + str(dt.day).zfill(2)  
 print("Generated today's date: " + str(request_date))
 
-
+# Retrieve asteroid data from the NASA website
 print("Request url: " + str(nasa_api_url + "rest/v1/feed?start_date=" + request_date + "&end_date=" + request_date + "&api_key=" + nasa_api_key))
 r = requests.get(nasa_api_url + "rest/v1/feed?start_date=" + request_date + "&end_date=" + request_date + "&api_key=" + nasa_api_key)
 
@@ -28,19 +28,20 @@ print("Response headers: " + str(r.headers))
 print("Response content: " + str(r.text))
 
 if r.status_code == 200:
-
+	#JSON data parse
 	json_data = json.loads(r.text)
 
 	ast_safe = []
 	ast_hazardous = []
-
+	#Checks if there are asteroids
 	if 'element_count' in json_data:
 		ast_count = int(json_data['element_count'])
 		print("Asteroid count today: " + str(ast_count))
-
+		#Checks if the needed data is there
 		if ast_count > 0:
 			for val in json_data['near_earth_objects'][request_date]:
 				if 'name' and 'nasa_jpl_url' and 'estimated_diameter' and 'is_potentially_hazardous_asteroid' and 'close_approach_data' in val:
+					#Asteroid names
 					tmp_ast_name = val['name']
 					tmp_ast_nasa_jpl_url = val['nasa_jpl_url']
 					if 'kilometers' in val['estimated_diameter']:
@@ -48,6 +49,7 @@ if r.status_code == 200:
 							tmp_ast_diam_min = round(val['estimated_diameter']['kilometers']['estimated_diameter_min'], 3)
 							tmp_ast_diam_max = round(val['estimated_diameter']['kilometers']['estimated_diameter_max'], 3)
 						else:
+							#values if data is missing
 							tmp_ast_diam_min = -2
 							tmp_ast_diam_max = -2
 					else:
@@ -59,6 +61,7 @@ if r.status_code == 200:
 					if len(val['close_approach_data']) > 0:
 						if 'epoch_date_close_approach' and 'relative_velocity' and 'miss_distance' in val['close_approach_data'][0]:
 							tmp_ast_close_appr_ts = int(val['close_approach_data'][0]['epoch_date_close_approach']/1000)
+							#converts the timestamps to utc
 							tmp_ast_close_appr_dt_utc = datetime.utcfromtimestamp(tmp_ast_close_appr_ts).strftime('%Y-%m-%d %H:%M:%S')
 							tmp_ast_close_appr_dt = datetime.fromtimestamp(tmp_ast_close_appr_ts).strftime('%Y-%m-%d %H:%M:%S')
 
