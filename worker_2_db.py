@@ -111,7 +111,15 @@ if __name__ == "__main__":
 		mysql_config_mysql_user = config.get('mysql_config', 'mysql_user')
 		mysql_config_mysql_pass = config.get('mysql_config', 'mysql_pass')
 
-	except:
+	except: # Loading logging configuration
+        with open('./log_worker.yaml', 'r') as stream:
+            log_config = yaml.safe_load(stream)
+
+        logging.config.dictConfig(log_config)
+
+        # Creating logger
+        logger = logging.getLogger('root')
+
 		logger.exception('')
 	logger.info('DONE')
 
